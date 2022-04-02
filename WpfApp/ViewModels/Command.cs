@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace WpfApp
 {
@@ -66,14 +67,8 @@ namespace WpfApp
             while (CanDraw)
             {
                 if (++parent == count_child)
-                {
                     count_child *= 2;
-                    Thread.Sleep(1000);
-                }
-                else
-                {
-                    Thread.Sleep(100);
-                }
+
                 DrawObject();
             }
         }
@@ -82,21 +77,22 @@ namespace WpfApp
         /// </summary>
         void DrawObject()
         {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                if (CanDraw)
+            Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background,
+                () =>
                 {
-                    Polyline p = new()
+                    if (CanDraw)
                     {
-                        Points = Coordinate.Get(),
-                        Stroke = Brushes.White,
-                        StrokeThickness = 2
-                    };
-                    CollectionFigure.Add(p);
-                    return;
-                }
-                parent--;
-            });
+                        Polyline p = new()
+                        {
+                            Points = Coordinate.Get(),
+                            Stroke = Brushes.White,
+                            StrokeThickness = 2
+                        };
+                        CollectionFigure.Add(p);
+                        return;
+                    }
+                    parent--;
+                });
         }
         #endregion
 
